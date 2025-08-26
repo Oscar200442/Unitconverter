@@ -54,9 +54,20 @@
         .max-w-4xl {
             max-width: 56rem; /* 896px */
         }
+        /* More robust grid layout for category buttons */
         #category-container {
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px; /* Added gap for better separation */
+        }
+        .category-btn {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* Fix for the unit select box width */
+        #from-unit, #to-unit {
+            width: 100% !important;
         }
     </style>
 </head>
@@ -71,7 +82,7 @@
 
         <div class="mb-6">
             <label class="block text-sm font-medium text-white mb-3">Category</label>
-            <div id="category-container" class="flex items-center space-x-2 overflow-x-auto pb-3 -mx-6 px-6">
+            <div id="category-container" class="pb-3 -mx-6 px-6">
             </div>
         </div>
 
@@ -81,7 +92,7 @@
                 <label for="from-value" class="block text-sm font-medium text-white mb-2">From</label>
                 <div class="flex flex-col md:flex-row items-center gap-2">
                     <input type="number" id="from-value" value="1" class="w-full p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-400 transition" placeholder="Enter value">
-                    <select id="from-unit" class="w-full md:w-1/2 p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
+                    <select id="from-unit" class="p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
                         </select>
                 </div>
             </div>
@@ -103,7 +114,7 @@
                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
                     </div>
-                    <select id="to-unit" class="w-full md:w-1/2 p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
+                    <select id="to-unit" class="p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
                         </select>
                 </div>
             </div>
