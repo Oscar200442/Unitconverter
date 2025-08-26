@@ -59,7 +59,6 @@
             <h1 class="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">Convertiverse</h1>
             <p class="text-white text-opacity-80 text-sm sm:text-base">Your go-to universal unit converter.</p>
         </div>
-        
 
         <div class="mb-6">
             <label class="block text-sm font-medium text-white mb-3">Category</label>
@@ -285,6 +284,9 @@
         swapButton.addEventListener('click', swapUnits);
         copyButton.addEventListener('click', copyResult);
         document.addEventListener('DOMContentLoaded', () => {
+            // Set initial units to Meters and Feet on page load
+            fromUnit = 'm';
+            toUnit = 'ft';
             populateCategories();
             populateUnits();
         });
