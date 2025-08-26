@@ -143,7 +143,9 @@
                 { name: "Bytes", unit: "B", factor: 1 }, { name: "Kilobytes", unit: "KB", factor: 1024 }, { name: "Megabytes", unit: "MB", factor: 1024**2 }, { name: "Gigabytes", unit: "GB", factor: 1024**3 }, { name: "Terabytes", unit: "TB", factor: 1024**4 }
             ],
             fuel_economy: [
-                { name: "Miles/Gallon", unit: "MPG", factor: 1 }, { name: "Liters/100km", unit: "L/100km", isInverse: true, factor: 235.214 }, { name: "Km/Liter", unit: "km/L", factor: 0.425144 }
+                { name: "Miles/Gallon", unit: "MPG", factor: 1 }, 
+                { name: "Liters/100km", unit: "L/100km", isInverse: true, factor: 235.214 }, 
+                { name: "Km/Liter", unit: "km/L", factor: 0.425144 }
             ],
             frequency: [
                 { name: "Hertz", unit: "Hz", factor: 1 }, { name: "Kilohertz", unit: "kHz", factor: 1000 }, { name: "Megahertz", unit: "MHz", factor: 1e6 }, { name: "Gigahertz", unit: "GHz", factor: 1e9 }
@@ -243,11 +245,11 @@
             } else {
                 let valueInBase;
                 if (fromData.isInverse) {
-                    valueInBase = 1 / inputValue * fromData.factor;
+                    valueInBase = fromData.factor / inputValue;
                 } else {
                     valueInBase = inputValue * fromData.factor;
                 }
-
+                
                 if (toData.isInverse) {
                     result = toData.factor / valueInBase;
                 } else {
