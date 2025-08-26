@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Unit Converter</title>
+    <!-- Use Tailwind CSS for a modern and responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use the Inter font for a clean look -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+    <style>
+        /* Custom Tailwind config to define the deep blue and purple gradient */
+        :root {
+            --gradient-start: #1c2b50;
+            --gradient-end: #4a196f;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+        }
+
+        /* Set a modern font stack */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom scrollbar for a polished look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="gradient-bg flex items-center justify-center min-h-screen text-white p-4">
+
+    <!-- Main conversion card container -->
+    <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl p-6 sm:p-10 w-full max-w-xl shadow-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold mb-2">Universal Unit Converter</h1>
+            <p class="text-white text-opacity-80 text-sm sm:text-base">Effortlessly convert between various units and metrics.</p>
+        </div>
+
+        <!-- Conversion category selection -->
+        <div class="mb-6">
+            <label for="category" class="block text-sm font-medium text-white mb-2">Select a Category</label>
+            <select id="category" class="w-full p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="distance" class="text-black">Distance</option>
+                <option value="weight" class="text-black">Weight & Mass</option>
+                <option value="temperature" class="text-black">Temperature</option>
+                <option value="volume" class="text-black">Volume</option>
+                <option value="time" class="text-black">Time</option>
+                <option value="speed" class="text-black">Speed</option>
+                <option value="area" class="text-black">Area</option>
+                <option value="power" class="text-black">Power</option>
+                <option value="pressure" class="text-black">Pressure</option>
+                <option value="energy" class="text-black">Energy</option>
+            </select>
+        </div>
+
+        <!-- Input and output fields with unit dropdowns -->
+        <div class="space-y-6">
+            <!-- From section -->
+            <div>
+                <label for="from-value" class="block text-sm font-medium text-white mb-2">From</label>
+                <div class="flex items-center space-x-2">
+                    <input type="number" id="from-value" value="1" class="w-2/3 p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter value">
+                    <select id="from-unit" class="w-1/3 p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- To section -->
+            <div>
+                <label for="to-value" class="block text-sm font-medium text-white mb-2">To</label>
+                <div class="flex items-center space-x-2">
+                    <input type="number" id="to-value" class="w-2/3 p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-500" readonly>
+                    <select id="to-unit" class="w-1/3 p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Define all conversion data in a single, well-structured object
+        const conversionData = {
+            distance: [
+                { name: "Meters", unit: "m", factor: 1 },
+                { name: "Kilometers", unit: "km", factor: 1000 },
+                { name: "Centimeters", unit: "cm", factor: 0.01 },
+                { name: "Millimeters", unit: "mm", factor: 0.001 },
+                { name: "Miles", unit: "mi", factor: 1609.34 },
+                { name: "Yards", unit: "yd", factor: 0.9144 },
+                { name: "Feet", unit: "ft", factor: 0.3048 },
+                { name: "Inches", unit: "in", factor: 0.0254 }
+            ],
+            weight: [
+                { name: "Grams", unit: "g", factor: 1 },
+                { name: "Kilograms", unit: "kg", factor: 1000 },
+                { name: "Milligrams", unit: "mg", factor: 0.001 },
+                { name: "Pounds", unit: "lbs", factor: 453.592 },
+                { name: "Ounces", unit: "oz", factor: 28.3495 },
+                { name: "Tons (metric)", unit: "t", factor: 1000000 }
+            ],
+            temperature: [
+                { name: "Celsius", unit: "°C", toBase: (c) => parseFloat(c), fromBase: (c) => parseFloat(c) },
+                { name: "Fahrenheit", unit: "°F", toBase: (f) => (parseFloat(f) - 32) * 5/9, fromBase: (c) => (parseFloat(c) * 9/5) + 32 },
+                { name: "Kelvin", unit: "K", toBase: (k) => parseFloat(k) - 273.15, fromBase: (c) => parseFloat(c) + 273.15 }
+            ],
+            volume: [
+                { name: "Liters", unit: "L", factor: 1 },
+                { name: "Milliliters", unit: "ml", factor: 0.001 },
+                { name: "Gallons (US)", unit: "gal", factor: 3.78541 },
+                { name: "Quarts (US)", unit: "qt", factor: 0.946353 },
+                { name: "Pints (US)", unit: "pt", factor: 0.473176 },
+                { name: "Fluid Ounces (US)", unit: "fl oz", factor: 0.0295735 }
+            ],
+            time: [
+                { name: "Seconds", unit: "s", factor: 1 },
+                { name: "Minutes", unit: "min", factor: 60 },
+                { name: "Hours", unit: "hr", factor: 3600 },
+                { name: "Days", unit: "day", factor: 86400 },
+                { name: "Weeks", unit: "wk", factor: 604800 },
+                { name: "Months", unit: "mo", factor: 2629800 }, // Average month
+                { name: "Years", unit: "yr", factor: 31557600 } // Average year
+            ],
+            speed: [
+                { name: "Meters per second", unit: "m/s", factor: 1 },
+                { name: "Kilometers per hour", unit: "km/h", factor: 1 / 3.6 },
+                { name: "Miles per hour", unit: "mph", factor: 0.44704 },
+                { name: "Knots", unit: "kn", factor: 0.514444 }
+            ],
+            area: [
+                { name: "Square Meters", unit: "m²", factor: 1 },
+                { name: "Square Kilometers", unit: "km²", factor: 1000000 },
+                { name: "Square Miles", unit: "mi²", factor: 2589988.11 },
+                { name: "Acres", unit: "ac", factor: 4046.86 },
+                { name: "Hectares", unit: "ha", factor: 10000 }
+            ],
+            power: [
+                { name: "Watts", unit: "W", factor: 1 },
+                { name: "Kilowatts", unit: "kW", factor: 1000 },
+                { name: "Horsepower", unit: "hp", factor: 745.7 }
+            ],
+            pressure: [
+                { name: "Pascals", unit: "Pa", factor: 1 },
+                { name: "Kilopascals", unit: "kPa", factor: 1000 },
+                { name: "Bar", unit: "bar", factor: 100000 },
+                { name: "PSI", unit: "psi", factor: 6894.76 },
+                { name: "Atmosphere", unit: "atm", factor: 101325 }
+            ],
+            energy: [
+                { name: "Joules", unit: "J", factor: 1 },
+                { name: "Kilojoules", unit: "kJ", factor: 1000 },
+                { name: "Calories", unit: "cal", factor: 4.184 },
+                { name: "Kilocalories", unit: "kcal", factor: 4184 },
+                { name: "Watt-hours", unit: "Wh", factor: 3600 },
+                { name: "Kilowatt-hours", unit: "kWh", factor: 3600000 }
+            ]
+        };
+
+        // Get references to all necessary DOM elements
+        const categorySelect = document.getElementById('category');
+        const fromUnitSelect = document.getElementById('from-unit');
+        const toUnitSelect = document.getElementById('to-unit');
+        const fromValueInput = document.getElementById('from-value');
+        const toValueInput = document.getElementById('to-value');
+
+        /**
+         * Populates the unit dropdowns based on the selected category.
+         */
+        function populateUnits() {
+            const selectedCategory = categorySelect.value;
+            const units = conversionData[selectedCategory];
+
+            // Clear existing options
+            fromUnitSelect.innerHTML = '';
+            toUnitSelect.innerHTML = '';
+
+            // Populate both dropdowns with the new units
+            units.forEach(unit => {
+                const fromOption = document.createElement('option');
+                fromOption.value = unit.unit;
+                fromOption.textContent = unit.name + " (" + unit.unit + ")";
+                fromOption.className = "text-black";
+                fromUnitSelect.appendChild(fromOption);
+
+                const toOption = document.createElement('option');
+                toOption.value = unit.unit;
+                toOption.textContent = unit.name + " (" + unit.unit + ")";
+                toOption.className = "text-black";
+                toUnitSelect.appendChild(toOption);
+            });
+
+            // Set default selections to avoid a blank option
+            fromUnitSelect.value = units[0]?.unit;
+            toUnitSelect.value = units[1]?.unit || units[0]?.unit;
+            
+            // Run conversion after populating
+            convert();
+        }
+
+        /**
+         * Performs the unit conversion calculation.
+         */
+        function convert() {
+            const fromUnit = fromUnitSelect.value;
+            const toUnit = toUnitSelect.value;
+            const inputValue = fromValueInput.value;
+            const selectedCategory = categorySelect.value;
+            
+            if (inputValue === "" || isNaN(inputValue)) {
+                toValueInput.value = "";
+                return;
+            }
+
+            const units = conversionData[selectedCategory];
+            const fromData = units.find(u => u.unit === fromUnit);
+            const toData = units.find(u => u.unit === toUnit);
+
+            if (!fromData || !toData) return;
+
+            let result;
+            if (selectedCategory === 'temperature') {
+                // Temperature requires a different conversion formula (not just a factor)
+                const baseValue = fromData.toBase(inputValue);
+                result = toData.fromBase(baseValue);
+            } else {
+                // For other units, use a simple factor conversion
+                const valueInBase = inputValue * fromData.factor;
+                result = valueInBase / toData.factor;
+            }
+
+            // Display the result, rounded to 4 decimal places for precision
+            toValueInput.value = parseFloat(result.toFixed(4));
+        }
+
+        // Add event listeners for all interactive elements
+        categorySelect.addEventListener('change', populateUnits);
+        fromUnitSelect.addEventListener('change', convert);
+        toUnitSelect.addEventListener('change', convert);
+        fromValueInput.addEventListener('input', convert);
+
+        // Initial population and conversion on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            populateUnits();
+        });
+
+    </script>
+</body>
+</html>
