@@ -49,11 +49,20 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
+        
+        /* Adjustments for wider layout */
+        .max-w-4xl {
+            max-width: 56rem; /* 896px */
+        }
+        #category-container {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="gradient-bg flex items-center justify-center min-h-screen text-white p-4 antialiased">
 
-    <div class="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-6 sm:p-8 w-full max-w-2xl shadow-2xl border border-white border-opacity-20">
+    <div class="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-6 sm:p-8 w-full max-w-4xl shadow-2xl border border-white border-opacity-20">
         
         <div class="text-center mb-8">
             <h1 class="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">Convertiverse</h1>
@@ -110,7 +119,7 @@
                 { name: "Grams", unit: "g", factor: 1 }, { name: "Kilograms", unit: "kg", factor: 1000 }, { name: "Milligrams", unit: "mg", factor: 0.001 }, { name: "Pounds", unit: "lb", factor: 453.592 }, { name: "Ounces", unit: "oz", factor: 28.3495 }, { name: "Tons (metric)", unit: "t", factor: 1000000 }, { name: "Stones", unit: "st", factor: 6350.29 }
             ],
             temperature: [
-                { name: "Celsius", unit: "°C", toBase: c => parseFloat(c), fromBase: c => parseFloat(c) }, { name: "Fahrenheit", unit: "°F", toBase: f => (parseFloat(f) - 32) * 5/9, fromBase: c => (parseFloat(c) * 9/5) + 32 }, { name: "Kelvin", unit: "K", toBase: k => parseFloat(k) - 273.15, fromBase: c => parseFloat(c) + 273.15 }
+                { name: "Celsius", unit: "°C", toBase: c => parseFloat(c), fromBase: c => (parseFloat(c) * 9/5) + 32 }, { name: "Fahrenheit", unit: "°F", toBase: f => (parseFloat(f) - 32) * 5/9, fromBase: c => (parseFloat(c) * 9/5) + 32 }, { name: "Kelvin", unit: "K", toBase: k => parseFloat(k) - 273.15, fromBase: c => parseFloat(c) + 273.15 }
             ],
             volume: [
                 { name: "Liters", unit: "L", factor: 1 }, { name: "Milliliters", unit: "mL", factor: 0.001 }, { name: "Gallons (US)", unit: "gal", factor: 3.78541 }, { name: "Quarts (US)", unit: "qt", factor: 0.946353 }, { name: "Pints (US)", unit: "pt", factor: 0.473176 }, { name: "Cubic Meters", unit: "m³", factor: 1000 }, { name: "Fluid Ounces (US)", unit: "fl oz", factor: 0.0295735 }
@@ -231,17 +240,19 @@
             if (currentCategory === 'temperature') {
                 const baseValue = fromData.toBase(inputValue);
                 result = toData.fromBase(baseValue);
-            } else if (currentCategory === 'fuel_economy') {
-                if (fromData.isInverse) {
-                    const baseValue = fromData.factor / inputValue;
-                    result = toData.isInverse ? toData.factor / baseValue : baseValue / toData.factor;
-                } else {
-                    const baseValue = inputValue * fromData.factor;
-                    result = toData.isInverse ? toData.factor / baseValue : baseValue / toData.factor;
-                }
             } else {
-                const valueInBase = inputValue * fromData.factor;
-                result = valueInBase / toData.factor;
+                let valueInBase;
+                if (fromData.isInverse) {
+                    valueInBase = 1 / inputValue * fromData.factor;
+                } else {
+                    valueInBase = inputValue * fromData.factor;
+                }
+
+                if (toData.isInverse) {
+                    result = toData.factor / valueInBase;
+                } else {
+                    result = valueInBase / toData.factor;
+                }
             }
 
             if (Math.abs(result) < 0.0001 && result !== 0) {
