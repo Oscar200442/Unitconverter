@@ -72,8 +72,8 @@
                 <label for="from-value" class="block text-sm font-medium text-white mb-2">From</label>
                 <div class="flex flex-col md:flex-row items-center gap-2">
                     <input type="number" id="from-value" value="1" class="w-full p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-400 transition" placeholder="Enter value">
-                    <div class="relative w-full" id="from-unit-dropdown">
-                    </div>
+                    <select id="from-unit" class="w-full md:w-1/2 p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
+                        </select>
                 </div>
             </div>
 
@@ -94,8 +94,8 @@
                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
                     </div>
-                    <div class="relative w-full" id="to-unit-dropdown">
-                    </div>
+                    <select id="to-unit" class="w-full md:w-1/2 p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
+                        </select>
                 </div>
             </div>
         </div>
@@ -146,64 +146,52 @@
 
         // State variables
         let currentCategory = 'distance';
-        let fromUnit, toUnit;
-
+        
         // DOM Elements
         const fromValueInput = document.getElementById('from-value');
         const toValueInput = document.getElementById('to-value');
         const categoryContainer = document.getElementById('category-container');
-        const fromUnitDropdownContainer = document.getElementById('from-unit-dropdown');
-        const toUnitDropdownContainer = document.getElementById('to-unit-dropdown');
+        const fromUnitSelect = document.getElementById('from-unit');
+        const toUnitSelect = document.getElementById('to-unit');
         const swapButton = document.getElementById('swap-button');
         const copyButton = document.getElementById('copy-button');
 
-        function createCustomDropdown(container, units, type) {
-            const selectedUnit = type === 'from' ? (fromUnit || units[0].unit) : (toUnit || units[1]?.unit || units[0].unit);
-            const selectedUnitData = units.find(u => u.unit === selectedUnit);
+        /**
+         * Populates the unit dropdowns based on the selected category.
+         */
+        function populateUnits() {
+            const units = conversionData[currentCategory];
 
-            container.innerHTML = `
-                <button class="w-full p-3 rounded-xl bg-white bg-opacity-20 text-white border border-white border-opacity-30 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
-                    <span class="font-medium">${selectedUnitData.name} (${selectedUnitData.unit})</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                <div class="absolute z-10 w-full mt-2 bg-gray-800 bg-opacity-80 backdrop-blur-lg rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
-                    ${units.map(unit => `
-                        <div class="p-3 hover:bg-purple-500 hover:bg-opacity-40 cursor-pointer" data-unit="${unit.unit}" data-type="${type}">
-                            ${unit.name} (${unit.unit})
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            
-            const button = container.querySelector('button');
-            const dropdown = container.querySelector('div');
-            const arrow = container.querySelector('svg');
+            // Clear existing options
+            fromUnitSelect.innerHTML = '';
+            toUnitSelect.innerHTML = '';
 
-            button.addEventListener('click', (e) => {
-                e.stopPropagation();
-                closeAllDropdowns();
-                dropdown.classList.toggle('hidden');
-                arrow.classList.toggle('rotate-180');
+            // Populate both dropdowns with the new units
+            units.forEach(unit => {
+                const fromOption = document.createElement('option');
+                fromOption.value = unit.unit;
+                fromOption.textContent = `${unit.name} (${unit.unit})`;
+                fromOption.className = "text-black";
+                fromUnitSelect.appendChild(fromOption);
+
+                const toOption = document.createElement('option');
+                toOption.value = unit.unit;
+                toOption.textContent = `${unit.name} (${unit.unit})`;
+                toOption.className = "text-black";
+                toUnitSelect.appendChild(toOption);
             });
+
+            // Set the default selections
+            fromUnitSelect.value = 'm';
+            toUnitSelect.value = 'ft';
             
-            dropdown.querySelectorAll('div').forEach(item => {
-                item.addEventListener('click', () => {
-                    if (type === 'from') fromUnit = item.dataset.unit;
-                    else toUnit = item.dataset.unit;
-                    
-                    updateDropdowns();
-                    convert();
-                    dropdown.classList.add('hidden');
-                    arrow.classList.remove('rotate-180');
-                });
-            });
-        }
-        
-        function closeAllDropdowns() {
-            document.querySelectorAll('#from-unit-dropdown div.absolute, #to-unit-dropdown div.absolute').forEach(d => d.classList.add('hidden'));
-            document.querySelectorAll('#from-unit-dropdown svg, #to-unit-dropdown svg').forEach(s => s.classList.remove('rotate-180'));
+            // Run conversion after populating
+            convert();
         }
 
+        /**
+         * Populates the category buttons.
+         */
         function populateCategories() {
             categoryContainer.innerHTML = Object.keys(conversionData).map(key => {
                 const name = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -213,24 +201,21 @@
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     currentCategory = btn.dataset.category;
-                    fromUnit = null; // Reset units
-                    toUnit = null;
                     populateUnits();
                     populateCategories(); // Re-render to update active state
                 });
             });
         }
         
-        function updateDropdowns() {
-            const units = conversionData[currentCategory];
-            createCustomDropdown(fromUnitDropdownContainer, units, 'from');
-            createCustomDropdown(toUnitDropdownContainer, units, 'to');
-        }
-
+        /**
+         * Performs the unit conversion calculation.
+         */
         function convert() {
+            const fromUnit = fromUnitSelect.value;
+            const toUnit = toUnitSelect.value;
+            const inputValue = parseFloat(fromValueInput.value);
             const fromData = conversionData[currentCategory].find(u => u.unit === fromUnit);
             const toData = conversionData[currentCategory].find(u => u.unit === toUnit);
-            const inputValue = parseFloat(fromValueInput.value);
 
             if (isNaN(inputValue) || !fromData || !toData) {
                 toValueInput.value = '';
@@ -254,7 +239,6 @@
                 result = valueInBase / toData.factor;
             }
 
-            // Fix for toPrecision which can sometimes give scientific notation for small numbers
             if (Math.abs(result) < 0.0001 && result !== 0) {
                 toValueInput.value = result.toExponential(4);
             } else {
@@ -262,37 +246,40 @@
             }
         }
 
+        /**
+         * Swaps the 'from' and 'to' units and values.
+         */
         function swapUnits() {
-            const tempUnit = fromUnit;
-            fromUnit = toUnit;
-            toUnit = tempUnit;
-            const tempValue = fromValueInput.value;
-            fromValueInput.value = toValueInput.value;
-            updateDropdowns();
-            // No need to call convert() as `updateDropdowns` does it
+            const fromUnit = fromUnitSelect.value;
+            const toUnit = toUnitSelect.value;
+            fromUnitSelect.value = toUnit;
+            toUnitSelect.value = fromUnit;
+            // A simple swap is enough since event listener handles the conversion
+            convert();
         }
 
+        /**
+         * Copies the result to the clipboard.
+         */
         function copyResult() {
             toValueInput.select();
-            toValueInput.setSelectionRange(0, 99999); // For mobile devices
+            toValueInput.setSelectionRange(0, 99999);
             document.execCommand("copy");
             alert("Result copied to clipboard!");
         }
         
         // Add event listeners for all interactive elements
         fromValueInput.addEventListener('input', convert);
+        fromUnitSelect.addEventListener('change', convert);
+        toUnitSelect.addEventListener('change', convert);
         swapButton.addEventListener('click', swapUnits);
         copyButton.addEventListener('click', copyResult);
+        
+        // Initial setup on page load
         document.addEventListener('DOMContentLoaded', () => {
-            // Set initial units to Meters and Feet on page load
-            fromUnit = 'm';
-            toUnit = 'ft';
             populateCategories();
             populateUnits();
         });
-        document.addEventListener('click', closeAllDropdowns);
-        document.getElementById('from-unit-dropdown').addEventListener('click', e => e.stopPropagation());
-        document.getElementById('to-unit-dropdown').addEventListener('click', e => e.stopPropagation());
     </script>
 </body>
 </html>
