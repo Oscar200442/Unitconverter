@@ -181,9 +181,14 @@
                 toUnitSelect.appendChild(toOption);
             });
 
-            // Set the default selections
-            fromUnitSelect.value = 'm';
-            toUnitSelect.value = 'ft';
+            // Set default selections based on the current category
+            if (currentCategory === 'distance') {
+                fromUnitSelect.value = 'm';
+                toUnitSelect.value = 'ft';
+            } else {
+                fromUnitSelect.value = units[0].unit;
+                toUnitSelect.value = units[1] ? units[1].unit : units[0].unit;
+            }
             
             // Run conversion after populating
             convert();
